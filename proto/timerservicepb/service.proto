@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/Tap-Team/timerticker/proto/timerservicepb";
+
+package timerservicepb;
+
+message AddEvent {
+    bytes timerId = 1;
+    int64 endTime = 2;
+}
+
+message AddManyEvent {
+    repeated AddEvent events = 1;
+}
+
+message StopEvent {
+    bytes timerId = 1;
+}
+
+message StartEvent {
+    bytes timerId = 1;
+    int64 endTime = 2;
+}
+
+message RemoveEvent {
+    bytes timerId = 1;
+}
+
+message TimerFinishEvent {
+    repeated bytes ids = 1;
+}
+
+
+service TimerService {
+    rpc Add(AddEvent) returns (google.protobuf.Empty) {}
+    rpc AddMany(AddManyEvent) returns (google.protobuf.Empty) {}
+    rpc Start(StartEvent) returns (google.protobuf.Empty) {}
+    rpc Stop(StopEvent) returns (google.protobuf.Empty) {}
+    rpc Remove(RemoveEvent) returns (google.protobuf.Empty) {} 
+    rpc TimerTick(google.protobuf.Empty) returns (stream TimerFinishEvent) {}
+}
