@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/Tap-Team/timerticker/internal/config"
@@ -13,13 +14,13 @@ import (
 )
 
 func Run() {
+	os.Setenv("TZ", "UTC")
+
 	config := config.FromFile("config/config.yaml")
 
 	ticker := timerticker.New()
 	defer ticker.Close()
-	go func() {
-		ticker.Start(context.Background(), time.Second)
-	}()
+	go ticker.Start(context.Background(), time.Second)
 
 	timerService := timerservice.New(ticker)
 

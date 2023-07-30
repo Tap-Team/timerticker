@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.15.8
-// source: proto/timerservice/service.proto
+// source: proto/timerservicepb/service.proto
 
 package timerservicepb
 
@@ -29,6 +29,7 @@ type TimerServiceClient interface {
 	Stop(ctx context.Context, in *StopEvent, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	Remove(ctx context.Context, in *RemoveEvent, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	TimerTick(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (TimerService_TimerTickClient, error)
+	Update(ctx context.Context, in *UpdateEvent, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type timerServiceClient struct {
@@ -41,7 +42,7 @@ func NewTimerServiceClient(cc grpc.ClientConnInterface) TimerServiceClient {
 
 func (c *timerServiceClient) Add(ctx context.Context, in *AddEvent, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/timerservice.TimerService/Add", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/timerservicepb.TimerService/Add", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +51,7 @@ func (c *timerServiceClient) Add(ctx context.Context, in *AddEvent, opts ...grpc
 
 func (c *timerServiceClient) AddMany(ctx context.Context, in *AddManyEvent, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/timerservice.TimerService/AddMany", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/timerservicepb.TimerService/AddMany", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +60,7 @@ func (c *timerServiceClient) AddMany(ctx context.Context, in *AddManyEvent, opts
 
 func (c *timerServiceClient) Start(ctx context.Context, in *StartEvent, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/timerservice.TimerService/Start", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/timerservicepb.TimerService/Start", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +69,7 @@ func (c *timerServiceClient) Start(ctx context.Context, in *StartEvent, opts ...
 
 func (c *timerServiceClient) Stop(ctx context.Context, in *StopEvent, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/timerservice.TimerService/Stop", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/timerservicepb.TimerService/Stop", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +78,7 @@ func (c *timerServiceClient) Stop(ctx context.Context, in *StopEvent, opts ...gr
 
 func (c *timerServiceClient) Remove(ctx context.Context, in *RemoveEvent, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/timerservice.TimerService/Remove", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/timerservicepb.TimerService/Remove", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func (c *timerServiceClient) Remove(ctx context.Context, in *RemoveEvent, opts .
 }
 
 func (c *timerServiceClient) TimerTick(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (TimerService_TimerTickClient, error) {
-	stream, err := c.cc.NewStream(ctx, &TimerService_ServiceDesc.Streams[0], "/timerservice.TimerService/TimerTick", opts...)
+	stream, err := c.cc.NewStream(ctx, &TimerService_ServiceDesc.Streams[0], "/timerservicepb.TimerService/TimerTick", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,6 +117,15 @@ func (x *timerServiceTimerTickClient) Recv() (*TimerFinishEvent, error) {
 	return m, nil
 }
 
+func (c *timerServiceClient) Update(ctx context.Context, in *UpdateEvent, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/timerservicepb.TimerService/Update", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TimerServiceServer is the server API for TimerService service.
 // All implementations must embed UnimplementedTimerServiceServer
 // for forward compatibility
@@ -126,6 +136,7 @@ type TimerServiceServer interface {
 	Stop(context.Context, *StopEvent) (*emptypb.Empty, error)
 	Remove(context.Context, *RemoveEvent) (*emptypb.Empty, error)
 	TimerTick(*emptypb.Empty, TimerService_TimerTickServer) error
+	Update(context.Context, *UpdateEvent) (*emptypb.Empty, error)
 	mustEmbedUnimplementedTimerServiceServer()
 }
 
@@ -151,6 +162,9 @@ func (UnimplementedTimerServiceServer) Remove(context.Context, *RemoveEvent) (*e
 func (UnimplementedTimerServiceServer) TimerTick(*emptypb.Empty, TimerService_TimerTickServer) error {
 	return status.Errorf(codes.Unimplemented, "method TimerTick not implemented")
 }
+func (UnimplementedTimerServiceServer) Update(context.Context, *UpdateEvent) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
 func (UnimplementedTimerServiceServer) mustEmbedUnimplementedTimerServiceServer() {}
 
 // UnsafeTimerServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -174,7 +188,7 @@ func _TimerService_Add_Handler(srv interface{}, ctx context.Context, dec func(in
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/timerservice.TimerService/Add",
+		FullMethod: "/timerservicepb.TimerService/Add",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TimerServiceServer).Add(ctx, req.(*AddEvent))
@@ -192,7 +206,7 @@ func _TimerService_AddMany_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/timerservice.TimerService/AddMany",
+		FullMethod: "/timerservicepb.TimerService/AddMany",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TimerServiceServer).AddMany(ctx, req.(*AddManyEvent))
@@ -210,7 +224,7 @@ func _TimerService_Start_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/timerservice.TimerService/Start",
+		FullMethod: "/timerservicepb.TimerService/Start",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TimerServiceServer).Start(ctx, req.(*StartEvent))
@@ -228,7 +242,7 @@ func _TimerService_Stop_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/timerservice.TimerService/Stop",
+		FullMethod: "/timerservicepb.TimerService/Stop",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TimerServiceServer).Stop(ctx, req.(*StopEvent))
@@ -246,7 +260,7 @@ func _TimerService_Remove_Handler(srv interface{}, ctx context.Context, dec func
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/timerservice.TimerService/Remove",
+		FullMethod: "/timerservicepb.TimerService/Remove",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TimerServiceServer).Remove(ctx, req.(*RemoveEvent))
@@ -275,11 +289,29 @@ func (x *timerServiceTimerTickServer) Send(m *TimerFinishEvent) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _TimerService_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateEvent)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TimerServiceServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/timerservicepb.TimerService/Update",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TimerServiceServer).Update(ctx, req.(*UpdateEvent))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TimerService_ServiceDesc is the grpc.ServiceDesc for TimerService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var TimerService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "timerservice.TimerService",
+	ServiceName: "timerservicepb.TimerService",
 	HandlerType: (*TimerServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -302,6 +334,10 @@ var TimerService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "Remove",
 			Handler:    _TimerService_Remove_Handler,
 		},
+		{
+			MethodName: "Update",
+			Handler:    _TimerService_Update_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -310,5 +346,5 @@ var TimerService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "proto/timerservice/service.proto",
+	Metadata: "proto/timerservicepb/service.proto",
 }

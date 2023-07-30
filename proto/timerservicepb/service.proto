@@ -11,6 +11,11 @@ message AddEvent {
     int64 endTime = 2;
 }
 
+message UpdateEvent {
+    bytes timerId = 1; 
+    int64 endTime = 2;
+}
+
 message AddManyEvent {
     repeated AddEvent events = 1;
 }
@@ -40,4 +45,5 @@ service TimerService {
     rpc Stop(StopEvent) returns (google.protobuf.Empty) {}
     rpc Remove(RemoveEvent) returns (google.protobuf.Empty) {} 
     rpc TimerTick(google.protobuf.Empty) returns (stream TimerFinishEvent) {}
+    rpc Update(UpdateEvent) returns (google.protobuf.Empty) {}
 }

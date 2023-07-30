@@ -70,7 +70,6 @@ func (t *Ticker) AddManyTimers(timersEndTime map[int64][]uuid.UUID) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	now := time.Now().Unix()
-
 	// validate endtime of timers
 	for endTime := range timersEndTime {
 		if now >= endTime {
@@ -126,16 +125,39 @@ func (t *Ticker) RemoveTimer(timerId uuid.UUID) error {
 	return timererror.ErrTimerNotFound
 }
 
+func (t *Ticker) UpdateTime(timerId uuid.UUID, newEndTime int64) error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	now := time.Now().Unix()
+	if now >= newEndTime {
+		return timererror.ErrTimerAlreadyExpired
+	}
+	oldEndTime, ok := t.timers[timerId]
+	if !ok {
+		return timererror.ErrTimerNotFound
+	}
+	timers := t.endTime[oldEndTime]
+	for index, id := range timers {
+		if id == timerId {
+			timers[index] = timers[len(timers)-1]
+			t.endTime[oldEndTime] = timers[:len(timers)-1]
+		}
+	}
+	t.endTime[newEndTime] = append(t.endTime[newEndTime], timerId)
+	t.timers[timerId] = newEndTime
+	return nil
+}
+
 func (t *Ticker) Start(ctx context.Context, ticktime time.Duration) {
 	ctx, cancel := context.WithCancel(ctx)
 	t.cancel = cancel
 	for {
-		time.Sleep(ticktime)
 		select {
 		case <-ctx.Done():
 			// close chan
 			return
 		default:
+			time.Sleep(ticktime)
 			// launch go function
 			go func() {
 				// get current time
@@ -158,6 +180,8 @@ func (t *Ticker) Start(ctx context.Context, ticktime time.Duration) {
 }
 
 func (t *Ticker) Close() error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
 	t.cancel()
 	for k := range t.endTime {
 		delete(t.endTime, k)

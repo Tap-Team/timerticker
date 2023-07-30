@@ -15,6 +15,7 @@ import (
 var empty emptypb.Empty
 
 type Ticker interface {
+	UpdateTime(timerId uuid.UUID, newEndTime int64) error
 	AddTimer(timerId uuid.UUID, endTime int64) error
 	AddManyTimers(timersEndTime map[int64][]uuid.UUID) error
 	RemoveTimer(timerId uuid.UUID) error
@@ -40,7 +41,7 @@ func New(
 func Error(err error) error {
 	switch {
 	case errors.Is(err, timererror.ErrTimerAlreadyExpired):
-		return nil
+		return status.Error(codes.InvalidArgument, err.Error())
 	case errors.Is(err, timererror.ErrTimerNotFound):
 		return status.Error(codes.NotFound, err.Error())
 	case errors.Is(err, timererror.ErrTimerExists):
@@ -53,7 +54,7 @@ func Error(err error) error {
 func (s *Service) Add(ctx context.Context, event *timerservicepb.AddEvent) (*emptypb.Empty, error) {
 	err := s.ticker.AddTimer(uuid.UUID(event.GetTimerId()), event.GetEndTime())
 	if err != nil {
-		return nil, Error(err)
+		return &empty, Error(err)
 	}
 	return &empty, nil
 }
@@ -64,28 +65,35 @@ func (s *Service) AddMany(ctx context.Context, event *timerservicepb.AddManyEven
 	}
 	err := s.ticker.AddManyTimers(timers)
 	if err != nil {
-		return nil, Error(err)
+		return &empty, Error(err)
 	}
 	return &empty, nil
 }
 func (s *Service) Start(ctx context.Context, event *timerservicepb.StartEvent) (*emptypb.Empty, error) {
 	err := s.ticker.AddTimer(uuid.UUID(event.GetTimerId()), event.GetEndTime())
 	if err != nil {
-		return nil, Error(err)
+		return &empty, Error(err)
 	}
 	return &empty, nil
 }
 func (s *Service) Stop(ctx context.Context, event *timerservicepb.StopEvent) (*emptypb.Empty, error) {
 	err := s.ticker.RemoveTimer(uuid.UUID(event.GetTimerId()))
 	if err != nil {
-		return nil, Error(err)
+		return &empty, Error(err)
 	}
 	return &empty, nil
 }
 func (s *Service) Remove(ctx context.Context, event *timerservicepb.RemoveEvent) (*emptypb.Empty, error) {
 	err := s.ticker.RemoveTimer(uuid.UUID(event.GetTimerId()))
 	if err != nil {
-		return nil, Error(err)
+		return &empty, Error(err)
+	}
+	return &empty, nil
+}
+func (s *Service) Update(ctx context.Context, event *timerservicepb.UpdateEvent) (*emptypb.Empty, error) {
+	err := s.ticker.UpdateTime(uuid.UUID(event.GetTimerId()), event.GetEndTime())
+	if err != nil {
+		return &empty, Error(err)
 	}
 	return &empty, nil
 }
